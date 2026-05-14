@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏详情</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif;}
+        body{background:#191919;color:#fff;padding:15px;}
+        .back{color:#ff5e78;text-decoration:none;margin-bottom:15px;display:inline-block;}
+        .g-title{font-size:20px;margin-bottom:15px;}
+        .box{background:#242424;padding:15px;border-radius:8px;margin-bottom:15px;}
+        .desc{color:#ccc;line-height:1.7;}
+        /* 16:9 截图 */
+        .s-img{width:100%;height:0;padding-top:56.25%;position:relative;background:#333;border-radius:6px;margin:10px 0;}
+        .s-img img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;}
+        .down{display:block;background:#ff5e78;text-align:center;padding:12px;border-radius:6px;color:#fff;text-decoration:none;margin-top:20px;}
+    </style>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J5X701JNWX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-J5X701JNWX');
+    </script>
+</head>
+<body>
+    <a href="index.html" class="back">← 返回首页</a>
+    <div id="content"></div>
+
+    <script>
+        let idx = new URLSearchParams(location.search).get("id");
+        let gameData = JSON.parse(localStorage.getItem("gameData")) || [];
+        let item = gameData[idx];
+
+        if(!item){
+            document.body.innerHTML = "<h3>游戏不存在</h3>";
+        }else{
+            // 增加浏览量
+            item.view = (item.view || 0) + 1;
+            localStorage.setItem("gameData",JSON.stringify(gameData));
+
+            document.getElementById("content").innerHTML = `
+                <h2 class="g-title">${item.title}</h2>
+                <div class="box"><p class="desc">${item.desc}</p></div>
+                <div class="box">
+                    <p>游戏截图</p>
+                    ${item.imgs.map(src=>`
+                        <div class="s-img"><img src="${src}"></div>
+                    `).join("")}
+                </div>
+                <div class="box">
+                    <p>平台：${item.plat || "未知"}</p>
+                    <p>版本：${item.ver || "未知"}</p>
+                </div>
+                <a href="${item.down}" class="down">立即下载</a>
+            `;
+        }
+    </script>
+</body>
+</html>

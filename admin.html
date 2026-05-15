@@ -3,94 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>游戏后台-不覆盖版</title>
+<title>真正一键上传后台</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#1a1a2e;color:#ffffff;padding:15px;font-family:Arial;}
 .box{max-width:600px;margin:0 auto;}
 h2{text-align:center;color:#00ff88;margin-bottom:20px;}
-input,select{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  background:#16213e;
-  border:none;
-  border-radius:6px;
-  color:#fff;
-  font-size:16px;
-}
-textarea{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  background:#fff;
-  color:#000;
-  border:none;
-  border-radius:6px;
-  font-size:16px;
-  min-height:120px;
-}
-button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  background:#00ff88;
-  border:none;
-  border-radius:6px;
-  font-size:17px;
-  font-weight:bold;
-  color:#000;
-  cursor:pointer;
-}
+input,select{width:100%;padding:12px;margin:8px 0;background:#16213e;border:none;border-radius:6px;color:#fff;font-size:16px;}
+textarea{width:100%;padding:12px;margin:8px 0;background:#fff;color:#000;border:none;border-radius:6px;font-size:16px;min-height:120px;}
+button{width:100%;padding:12px;margin-top:10px;background:#00ff88;border:none;border-radius:6px;font-size:17px;font-weight:bold;color:#000;cursor:pointer;}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 .row select{flex:1;}
-#previewImg{
-  max-width:100%;
-  border-radius:6px;
-  margin:10px 0;
-  display:none;
-}
-#jsonBox{
-  margin-top:20px;
-  background:#16213e;
-  padding:15px;
-  border-radius:6px;
-  white-space:pre-wrap;
-  word-break:break-all;
-  color:#fff;
-}
-.color-wrap{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin:10px 0;
-}
-.color-item{
-  width:35px;
-  height:35px;
-  border-radius:50%;
-  border:2px solid #fff;
-  cursor:pointer;
-}
-input[type="color"]{
-  width:50px;
-  height:40px;
-  padding:0;
-  border:none;
-  background:transparent;
-}
-.tip{
-  font-size:14px;
-  color:#ccc;
-  margin:6px 0;
-}
+#previewImg{max-width:100%;border-radius:6px;margin:10px 0;display:none;}
+.tip{font-size:14px;color:#ccc;margin:6px 0;}
+.color-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+.color-item{width:35px;height:35px;border-radius:50%;border:2px solid #fff;cursor:pointer;}
+input[type="color"]{width:50px;height:40px;padding:0;border:none;background:transparent;}
 </style>
 </head>
 <body>
 <div class="box">
-  <h2>添加游戏-不覆盖版</h2>
+  <h2>一键直接上传 · 自动保存</h2>
 
-  <input type="text" id="gid" placeholder="游戏ID 填数字（每次+1，比如1、2、3）">
   <input type="text" id="gtitle" placeholder="游戏标题">
 
   <input type="file" id="coverFile" accept="image/*">
@@ -98,112 +32,113 @@ input[type="color"]{
 
   <div class="row">
     <select id="fontSize">
-      <option value="16px">字体大小 16px</option>
-      <option value="18px">字体大小 18px</option>
-      <option value="20px">字体大小 20px</option>
-      <option value="22px">字体大小 22px</option>
+      <option value="16px">字体16px</option>
+      <option value="18px">字体18px</option>
+      <option value="20px">字体20px</option>
+      <option value="22px">字体22px</option>
     </select>
   </div>
 
-  <div class="tip">点色块快速选色，或用取色器自定义任意颜色</div>
+  <div class="tip">选文字颜色，右侧可取色器自定义</div>
   <div class="color-wrap">
-    <div class="color-item" style="background:#ffffff;" onclick="pickColor('#ffffff')"></div>
+    <div class="color-item" style="background:#fff;" onclick="pickColor('#fff')"></div>
     <div class="color-item" style="background:#00ff88;" onclick="pickColor('#00ff88')"></div>
     <div class="color-item" style="background:#ffcc00;" onclick="pickColor('#ffcc00')"></div>
     <div class="color-item" style="background:#ff6666;" onclick="pickColor('#ff6666')"></div>
     <div class="color-item" style="background:#66ccff;" onclick="pickColor('#66ccff')"></div>
-    <div class="color-item" style="background:#9966ff;" onclick="pickColor('#9966ff')"></div>
-    <div class="color-item" style="background:#ff9900;" onclick="pickColor('#ff9900')"></div>
-    <div class="color-item" style="background:#33ff33;" onclick="pickColor('#33ff33')"></div>
     <input type="color" id="colorPicker" onchange="pickColor(this.value)">
   </div>
 
-  <textarea id="gdetail" placeholder="输入游戏介绍文字..."></textarea>
-  <input type="text" id="gdown" placeholder="游戏下载链接">
+  <textarea id="gdetail" placeholder="写游戏介绍"></textarea>
+  <input type="text" id="gdown" placeholder="下载链接">
 
-  <button onclick="genJson()">生成游戏代码</button>
-  <button onclick="copyJson()">一键复制</button>
-
-  <div class="tip">💡 复制后：
-    <br>1. 如果是第一次添加：直接粘贴到 games.json
-    <br>2. 如果不是第一次：在旧游戏的最后一行 `},` 后面，粘贴新游戏的 `{...},`
-  </div>
-  <div id="jsonBox"></div>
+  <button onclick="saveGame()">直接保存到网站</button>
+  <div id="msg" class="tip"></div>
 </div>
 
 <script>
-if(!localStorage.isAdmin){
-  location.href = "admin-login.html";
-}
+if(!localStorage.isAdmin){location.href="admin-login.html";}
+
+// ============ 这里改成你自己的信息 ============
+const GITHUB_OWNER = "你的GitHub用户名";
+const GITHUB_REPO = "你的仓库名";
+const GITHUB_TOKEN = "你的GitHub个人令牌";
+// ============================================
 
 let coverBase64 = "";
 let nowColor = "#ffffff";
 
-function pickColor(c){
-  nowColor = c;
-}
+function pickColor(c){nowColor = c;}
 
+// 本地上传封面转Base64
 document.getElementById('coverFile').addEventListener('change',function(e){
   let file = e.target.files[0];
-  if(!file) return;
+  if(!file)return;
   let reader = new FileReader();
   reader.onload = function(ev){
     coverBase64 = ev.target.result;
-    let img = document.getElementById('previewImg');
-    img.src = coverBase64;
-    img.style.display = "block";
+    document.getElementById('previewImg').src = coverBase64;
+    document.getElementById('previewImg').style.display = "block";
   }
   reader.readAsDataURL(file);
 });
 
-function genJson(){
-  let id = document.getElementById('gid').value.trim();
+// 直接保存到服务器
+async function saveGame(){
   let title = document.getElementById('gtitle').value.trim();
   let detailText = document.getElementById('gdetail').value.trim();
   let downUrl = document.getElementById('gdown').value.trim();
   let fSize = document.getElementById('fontSize').value;
 
-  if(!id || !title || !coverBase64){
-    alert('请填写ID、标题，并选择封面图片');
+  if(!title||!coverBase64){
+    alert("请填好标题、上传封面");
     return;
+  }
+
+  // 自动生成ID：读取旧游戏数量+1
+  let autoId = 1;
+  try{
+    let res = await fetch("games.json");
+    let list = await res.json();
+    autoId = list.length + 1;
+  }catch(e){
+    autoId = 1;
   }
 
   let detailHtml = `<div style="font-size:${fSize};color:${nowColor};line-height:1.6;">${detailText}</div>`;
 
-  // 只生成单条游戏对象，不带数组，方便追加
-  let gameItem = {
-    "id": parseInt(id),
-    "title": title,
-    "cover": coverBase64,
-    "detail": detailHtml,
-    "downloadUrl": downUrl
+  let gameData = {
+    id: autoId,
+    title: title,
+    cover: coverBase64,
+    detail: detailHtml,
+    downloadUrl: downUrl
   };
 
-  // 提示用户怎么用
-  let tip = `
-// 新游戏代码（复制下面的{...}部分）
-// 第一次添加：把下面整个[]粘贴到games.json
-// 不是第一次：把{...}复制到旧游戏后面，前面加个逗号
-[
-  ${JSON.stringify(gameItem,null,2)}
-]`;
+  document.getElementById("msg").innerText = "正在保存...";
 
-  document.getElementById('jsonBox').innerText = tip;
-}
+  try{
+    let res = await fetch("/api/save-game",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        gameData,
+        owner:GITHUB_OWNER,
+        repo:GITHUB_REPO,
+        token:GITHUB_TOKEN
+      })
+    });
 
-function copyJson(){
-  let text = document.getElementById('jsonBox').innerText;
-  if(!text){
-    alert('先生成内容再复制');
-    return;
+    let json = await res.json();
+    if(json.success){
+      document.getElementById("msg").innerText = "✅ 保存成功，自动生效！";
+      alert("保存成功！前台刷新就能看到");
+    }else{
+      document.getElementById("msg").innerText = "❌ 失败："+json.msg;
+    }
+  }catch(err){
+    document.getElementById("msg").innerText = "❌ 网络错误";
   }
-  let temp = document.createElement('textarea');
-  temp.value = text;
-  document.body.appendChild(temp);
-  temp.select();
-  document.execCommand('copy');
-  document.body.removeChild(temp);
-  alert('复制成功！按提示追加到games.json里');
 }
 </script>
 </body>

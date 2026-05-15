@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>真正一键上传后台</title>
+<title>带图片插入的一键上传后台</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#1a1a2e;color:#ffffff;padding:15px;font-family:Arial;}
@@ -12,6 +12,7 @@ h2{text-align:center;color:#00ff88;margin-bottom:20px;}
 input,select{width:100%;padding:12px;margin:8px 0;background:#16213e;border:none;border-radius:6px;color:#fff;font-size:16px;}
 textarea{width:100%;padding:12px;margin:8px 0;background:#fff;color:#000;border:none;border-radius:6px;font-size:16px;min-height:120px;}
 button{width:100%;padding:12px;margin-top:10px;background:#00ff88;border:none;border-radius:6px;font-size:17px;font-weight:bold;color:#000;cursor:pointer;}
+.small-btn{width:auto;padding:8px 12px;margin:4px 0;font-size:14px;}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 .row select{flex:1;}
 #previewImg{max-width:100%;border-radius:6px;margin:10px 0;display:none;}
@@ -23,7 +24,7 @@ input[type="color"]{width:50px;height:40px;padding:0;border:none;background:tran
 </head>
 <body>
 <div class="box">
-  <h2>一键直接上传 · 自动保存</h2>
+  <h2>一键直接上传 · 带图片插入</h2>
 
   <input type="text" id="gtitle" placeholder="游戏标题">
 
@@ -49,7 +50,12 @@ input[type="color"]{width:50px;height:40px;padding:0;border:none;background:tran
     <input type="color" id="colorPicker" onchange="pickColor(this.value)">
   </div>
 
-  <textarea id="gdetail" placeholder="写游戏介绍"></textarea>
+  <textarea id="gdetail" placeholder="写游戏介绍... 可以在文字中间插入图片"></textarea>
+
+  <!-- 新增：游戏介绍图片上传功能 -->
+  <input type="file" id="introImgFile" accept="image/*" class="small-btn">
+  <button type="button" onclick="insertIntroImage()" class="small-btn">插入图片到介绍</button>
+
   <input type="text" id="gdown" placeholder="下载链接">
 
   <button onclick="saveGame()">直接保存到网站</button>
@@ -60,17 +66,18 @@ input[type="color"]{width:50px;height:40px;padding:0;border:none;background:tran
 if(!localStorage.isAdmin){location.href="admin-login.html";}
 
 // ============ 这里改成你自己的信息 ============
-const GITHUB_OWNER = "你的GitHub用户名";
-const GITHUB_REPO = "你的仓库名";
+const GITHUB_OWNER = "xiaxuexue652";
+const GITHUB_REPO = "xiaxuexue652-ops";
 const GITHUB_TOKEN = "你的GitHub个人令牌";
 // ============================================
 
 let coverBase64 = "";
+let introImgBase64 = "";
 let nowColor = "#ffffff";
 
 function pickColor(c){nowColor = c;}
 
-// 本地上传封面转Base64
+// 封面图片转Base64
 document.getElementById('coverFile').addEventListener('change',function(e){
   let file = e.target.files[0];
   if(!file)return;
@@ -82,6 +89,40 @@ document.getElementById('coverFile').addEventListener('change',function(e){
   }
   reader.readAsDataURL(file);
 });
+
+// 新增：游戏介绍图片转Base64
+document.getElementById('introImgFile').addEventListener('change',function(e){
+  let file = e.target.files[0];
+  if(!file)return;
+  let reader = new FileReader();
+  reader.onload = function(ev){
+    introImgBase64 = ev.target.result;
+    alert("图片已准备好，点击「插入图片到介绍」按钮添加");
+  }
+  reader.readAsDataURL(file);
+});
+
+// 新增：把图片插入到介绍文本框
+function insertIntroImage(){
+  if(!introImgBase64){
+    alert("请先选择一张图片");
+    return;
+  }
+  const textarea = document.getElementById('gdetail');
+  const imgTag = `<img src="${introImgBase64}" style="max-width:100%;border-radius:8px;margin:10px 0;">\n`;
+  
+  // 插入到光标位置
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const before = text.substring(0, start);
+  const after = text.substring(end, text.length);
+  textarea.value = before + imgTag + after;
+  
+  // 重置图片变量，避免重复插入
+  introImgBase64 = "";
+  document.getElementById('introImgFile').value = "";
+}
 
 // 直接保存到服务器
 async function saveGame(){
@@ -105,6 +146,7 @@ async function saveGame(){
     autoId = 1;
   }
 
+  // 把文字和图片包装成带样式的HTML
   let detailHtml = `<div style="font-size:${fSize};color:${nowColor};line-height:1.6;">${detailText}</div>`;
 
   let gameData = {
@@ -137,7 +179,7 @@ async function saveGame(){
       document.getElementById("msg").innerText = "❌ 失败："+json.msg;
     }
   }catch(err){
-    document.getElementById("msg").innerText = "❌ 网络错误";
+    document.getElementById("msg").innerText = "❌ 网络错误："+err.message;
   }
 }
 </script>

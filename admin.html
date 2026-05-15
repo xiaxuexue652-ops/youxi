@@ -1,1 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>一键上传后台（最终稳定版）</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#1a1a2e;color:#ffffff;padding:15px;font-family:Arial;}
+.box{max-width:600px;margin:0 auto;}
+h2{text-align:center;color:#00ff88;margin-bottom:20px;}
+input,select{width:100%;padding:12px;margin:8px 0;background:#16213e;border:none;border-radius:6px;color:#fff;font-size:16px;}
+textarea{width:100%;padding:12px;margin:8px 0;background:#fff;color:#000;border:none;border-radius:6px;font-size:16px;min-height:120px;}
+button{width:100%;padding:12px;margin-top:10px;background:#00ff88;border:none;border-radius:6px;font-size:17px;font-weight:bold;color:#000;cursor:pointer;}
+.small-btn{width:auto;padding:8px 12px;margin:4px 0;font-size:14px;}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.row select{flex:1;}
+#previewImg{max-width:100%;border-radius:6px;margin:10px 0;display:none;}
+.tip{font-size:14px;color:#ccc;margin:6px 0;}
+.color-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+.color-item{width:35px;height:35px;border-radius:50%;border:2px solid #fff;cursor:pointer;}
+input[type="color"]{width:50px;height:40px;padding:0;border:none;background:transparent;}
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>一键直接上传 · 带图片插入</h2>
+
+  <input type="text" id="gtitle" placeholder="游戏标题">
+
+  <input type="file" id="coverFile" accept="image/*">
+  <img id="previewImg" alt="封面预览">
+
+  <div class="row">
+    <select id="fontSize">
+      <option value="16px">字体16px</option>
+      <option value="18px">字体18px</option>
+      <option value="20px">字体20px</option>
+      <option value="22px">字体22px</option>
+    </select>
+  </div>
+
+  <div class="tip">选文字颜色，右侧可取色器自定义</div>
+  <div class="color-wrap">
+    <div class="color-item" style="background:#fff;" onclick="pickColor('#fff')"></div>
+    <div class="color-item" style="background:#00ff88;" onclick="pickColor('#00ff88')"></div>
+    <div class="color-item" style="background:#ffcc00;" onclick="pickColor('#ffcc00')"></div>
+    <div class="color-item" style="background:#ff6666;" onclick="pickColor('#ff6666')"></div>
+    <div class="color-item" style="background:#66ccff;" onclick="pickColor('#66ccff')"></div>
+    <input type="color" id="colorPicker" onchange="pickColor(this.value)">
+  </div>
+
+  <textarea id="gdetail" placeholder="写游戏介绍... 可以在文字中间插入图片"></textarea>
+
+  <input type="file" id="introImgFile" accept="image/*" class="small-btn">
+  <button type="button" onclick="insertIntroImage()" class="small-btn">插入图片到介绍</button>
+
+  <input type="text" id="gdown" placeholder="下载链接">
+
+  <button onclick="saveGame()">直接保存到网站</button>
+  <div id="msg" class="tip"></div>
+</div>
+
+<script>
+if(!localStorage.isAdmin){location.href="admin-login.html";}
+
+// ============ 这里改成你自己的信息 ============
+const GITHUB_OWNER = "xiaxuexue652";
+const GITHUB_REPO = "xiaxuexue652-ops";
+const GITHUB_TOKEN = "你的GitHub个人令牌";
+// ============================================
+
+let coverBase64 = "";
+let introImgBase64 = "";
+let nowColor = "#ffffff";
+
+function pickColor(c){nowColor = c;}
+
+// 封面图片转Base64
+document.getElementById('coverFile').addEventListener('change',function(e){
+  let file = e.target.files[0];
+  if(!file)return;
+  let reader = new FileReader();
+  reader.onload = function(ev){
+    coverBase64 = ev.target.result;
+    document.getElementById('previewImg').src = coverBase64;
+    document.getElementById('previewImg').style.display = "block";
+  }
+  reader.readAsDataURL(file);
+});
+
+// 游戏介绍图片转Base64
+document.getElementById('introImgFile').addEventListener('change',function(e){
+  let file = e.target.files[0];
+  if(!file)return;
+  let reader = new FileReader();
+  reader.onload = function(ev){
+    introImgBase64 = ev.target.result;
+    alert("图片已准备好，点击「插入图片到介绍」按钮添加");
+  }
+  reader.readAsDataURL(file);
+});
+
+// 把图片插入到介绍文本框
+function insertIntroImage(){
+  if(!introImgBase64){
+    alert("请先选择一张图片");
+    return;
+  }
+  const textarea = document.getElementById('gdetail');
+  const imgTag = `<img src="${introImgBase64}" style="max-width:100%;border-radius:8px;margin:10px 0;">\n`;
+  
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const before = text.substring(0, start);
+  const after = text.substring(end, text.length);
+  textarea.value = before + imgTag + after;
+  
+  introImgBase64 = "";
+  document.getElementById('introImgFile').value = "";
+}
+
+// 直接保存到服务器（优化了中文和大图片兼容性）
+async function saveGame(){
+  let title = document.getElementById('gtitle').value.trim();
+  let detailText = document.getElementById('gdetail').value.trim();
+  let downUrl = document.getElementById('gdown').value.trim();
+  let fSize = document.getElementById('fontSize').value;
+
+  if(!title||!coverBase64){
+    alert("请填好标题、上传封面");
+    return;
+  }
+
+  // 自动生成ID
+  let autoId = 1;
+  try{
+    let res = await fetch("games.json");
+    let list = await res.json();
+    autoId = list.length + 1;
+  }catch(e){
+    autoId = 1;
+  }
+
+  // 包装介绍内容
+  let detailHtml = `<div style="font-size:${fSize};color:${nowColor};line-height:1.6;">${detailText}</div>`;
+
+  let gameData = {
+    id: autoId,
+    title: title,
+    cover: coverBase64,
+    detail: detailHtml,
+    downloadUrl: downUrl
+  };
+
+  document.getElementById("msg").innerText = "正在保存...";
+
+  try{
+    let res = await fetch("/api/save-game",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        gameData,
+        owner:GITHUB_OWNER,
+        repo:GITHUB_REPO,
+        token:GITHUB_TOKEN
+      })
+    });
+
+    let json = await res.json();
+    if(json.success){
+      document.getElementById("msg").innerText = "✅ 保存成功，自动生效！";
+      alert("保存成功！前台刷新就能看到");
+    }else{
+      document.getElementById("msg").innerText = "❌ 失败："+json.msg;
+    }
+  }catch(err){
+    document.getElementById("msg").innerText = "❌ 网络错误："+err.message;
+  }
+}
+</script>
+</body>
+</html>
 

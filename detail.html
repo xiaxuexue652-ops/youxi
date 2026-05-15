@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>游戏详情</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#1a1a2e;color:#fff;padding:20px;}
+.container{max-width:800px;margin:0 auto;}
+.back{color:#aaa;text-decoration:none;margin-bottom:15px;display:inline-block;}
+.back:hover{color:#fff;}
+.cover{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;margin-bottom:20px;}
+h2{color:#00ff88;margin-bottom:20px;}
+.content{line-height:1.8;}
+.content img{max-width:100%;border-radius:5px;margin:10px 0;}
+.down-btn{display:inline-block;margin-top:25px;padding:12px 25px;background:#00ff88;color:#111;text-decoration:none;border-radius:5px;font-weight:bold;}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back">← 返回首页</a>
+  <div id="wrap"></div>
+</div>
+
+<script>
+async function loadDetail(){
+  let id = new URLSearchParams(location.search).get('id');
+  if(!id){document.getElementById('wrap').innerHTML='游戏不存在';return;}
+  let res = await fetch('games.json');
+  let list = await res.json();
+  let game = list.find(x=>x.id==id);
+  if(!game){document.getElementById('wrap').innerHTML='游戏不存在';return;}
+
+  document.getElementById('wrap').innerHTML = `
+    <img src="${game.cover}" class="cover">
+    <h2>${game.title}</h2>
+    <div class="content">${game.detail}</div>
+    <a href="${game.downloadUrl}" target="_blank" class="down-btn">立即下载</a>
+  `;
+}
+loadDetail();
+</script>
+</body>
+</html>
